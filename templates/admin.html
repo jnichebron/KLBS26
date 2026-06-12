@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KLBS26 Admin Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #070f1f;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .stats {
+            text-align: center;
+            color: #9fb4ff;
+        }
+
+        /* ================= DESKTOP ================= */
+        .desktop {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #111c36;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .user-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .name { font-weight: bold; font-size: 18px; }
+        .info { font-size: 13px; color: #9fb4ff; }
+
+        .tag { color: #16a34a; }
+
+        .btn {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        .checkin { background: #16a34a; color: white; }
+        .delete { background: #dc2626; color: white; }
+
+        /* ================= MOBILE APP MODE ================= */
+        .mobile {
+            display: none;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .mobile-screen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .mobile-img {
+            width: 100%;
+            height: 55vh;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .m-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .m-info {
+            font-size: 14px;
+            color: #9fb4ff;
+        }
+
+        .m-tag {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .mobile-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mobile-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .m-checkin { background: #16a34a; color: white; }
+        .m-delete { background: #dc2626; color: white; }
+
+        /* ================= SWITCH ================= */
+        @media(max-width:768px){
+            .desktop { display: none; }
+            .mobile { display: block; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>KLBS26 Admin Dashboard</h1>
+
+    <div class="stats">
+        Total: {{ total }}
+    </div>
+
+    <!-- ================= DESKTOP ================= -->
+    <div class="desktop">
+
+        {% for user in users %}
+        <div class="card">
+
+            {% if user['image'] %}
+            <img class="user-img"
+                 src="{{ url_for('static', filename=user['image']) }}">
+            {% endif %}
+
+            <div class="name">{{ user['full_name'] }}</div>
+            <div class="info">{{ user['phone'] }}</div>
+            <div class="info">{{ user['email'] }}</div>
+            <div class="info">{{ user['location'] }}</div>
+
+            <div class="tag">TAG: {{ user['tag'] }}</div>
+
+            {% if user['checked_in'] == 0 %}
+            <a href="/checkin/{{ user['id'] }}">
+                <button class="btn checkin">Check In</button>
+            </a>
+            {% endif %}
+
+            <a href="/delete/{{ user['id'] }}">
+                <button class="btn delete">Delete</button>
+            </a>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- ================= MOBILE FULL SCREEN ================= -->
+    <div class="mobile">
+
+        {% for user in users %}
+        <div class="mobile-screen">
+
+            {% if user['image'] %}
+            <img class="mobile-img"
+                 src="{{ url_for('static', filename=user['image']) }}">
+            {% endif %}
+
+            <div>
+                <div class="m-name">{{ user['full_name'] }}</div>
+                <div class="m-info">{{ user['phone'] }}</div>
+                <div class="m-info">{{ user['email'] }}</div>
+                <div class="m-info">{{ user['location'] }}</div>
+                <div class="m-tag">TAG: {{ user['tag'] }}</div>
+            </div>
+
+            <div class="mobile-buttons">
+
+                {% if user['checked_in'] == 0 %}
+                <a href="/checkin/{{ user['id'] }}" style="flex:1;">
+                    <button class="m-checkin">CHECK IN</button>
+                </a>
+                {% endif %}
+
+                <a href="/delete/{{ user['id'] }}" style="flex:1;">
+                    <button class="m-delete">DELETE</button>
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

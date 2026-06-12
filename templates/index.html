@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KLBS26 Registration</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #070f1f;
+            color: white;
+        }
+
+        .container {
+            max-width: 820px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #9fb4ff;
+            margin-top: 6px;
+        }
+
+        .card {
+            background: #111c36;
+            padding: 30px;
+            border-radius: 14px;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: white;
+            color: black;
+            font-size: 14px;
+        }
+
+        textarea {
+            height: 90px;
+            resize: none;
+        }
+
+        .full {
+            grid-column: span 2;
+        }
+
+        .camera-box {
+            grid-column: span 2;
+            background: #0b1b38;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        #preview {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .capture {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #16a34a;
+            color: white;
+            cursor: pointer;
+        }
+
+        button.submit {
+            grid-column: span 2;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button.submit:hover {
+            background: #1d4ed8;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media(max-width: 700px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            .full, .camera-box, button.submit {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div style="text-align:center; margin-bottom:20px;">
+    <img src="{{ url_for('static', filename='images/logo.png') }}"
+         style="width:90px; height:90px; object-fit:contain;">
+</div>
+    <div class="header">
+        <h1>Kingdom, Leaders and Business Summit 2026</h1>
+        <p>THINK GLOBAL</p>
+        <p>Please complete this registration form carefully. Note that each participant is allowed only one registration.</p>
+    </div>
+
+    <div class="card">
+
+        <form method="POST" action="/register" onsubmit="return validateForm()">
+
+            <div class="field">
+                <label>Full Name</label>
+                <input name="full_name" required>
+            </div>
+
+            <div class="field">
+                <label>Phone Number (Preferably WhatsApp)</label>
+                <input name="phone" required>
+            </div>
+
+            <div class="field full">
+                <label>Email Address (Please ensure the Email address is correct).</label>
+                <input name="email" required>
+            </div>
+
+            <div class="field">
+                <label>Occupation</label>
+                <input name="occupation" required>
+            </div>
+
+            <div class="field">
+                <label>Address</label>
+                <input name="location" required>
+            </div>
+
+            <div class="field full">
+                <label>What are your expectations for the Summit?</label>
+                <textarea name="expectations" required></textarea>
+            </div>
+
+            <div class="field full">
+                <label>What do you hope to gain for Summit?</label>
+                <textarea name="goals" required></textarea>
+            </div>
+
+            <div class="field full">
+                <label>How did you hear about us?</label>
+                <select name="referral" id="referral" onchange="checkReferral()" required>
+                    <option value="">Select option</option>
+                    <option value="Social Media (Instagram/Facebook)">Social Media (Instagram/Facebook)</option>
+                    <option value="Personal Invitation">Personal Invitation</option>
+                    <option value="Poster / Flyer">Poster / Flyer</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="field full">
+                <input type="text" name="referral_other" id="referral_other"
+                    placeholder="Please specify"
+                    class="hidden">
+            </div>
+
+            <!-- CAMERA SECTION -->
+            <div class="camera-box">
+                <video id="video" autoplay></video>
+
+                <button type="button" class="capture" onclick="takePhoto()">
+                    Capture Face
+                </button>
+
+                <img id="preview">
+
+                <input type="hidden" name="captured_image" id="captured_image">
+
+                <!-- ✅ ONLY ADDITION (FIXED ERROR DISPLAY) -->
+                {% if error %}
+                <p style="color:red; margin-top:10px; font-weight:bold;">
+                    {{ error }}
+                </p>
+                {% endif %}
+
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <p style="color:red; margin-top:10px; font-weight:bold;">
+                        {{ messages[0] }}
+                    </p>
+                  {% endif %}
+                {% endwith %}
+
+            </div>
+
+            <button class="submit" type="submit">Submit Registration</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+let video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    video.srcObject = stream;
+});
+
+function takePhoto() {
+    let canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    let image = canvas.toDataURL("image/jpeg");
+
+    document.getElementById("captured_image").value = image;
+
+    let preview = document.getElementById("preview");
+    preview.src = image;
+    preview.style.display = "block";
+
+    alert("Face captured successfully!");
+}
+
+function checkReferral() {
+    let r = document.getElementById("referral").value;
+    let o = document.getElementById("referral_other");
+
+    if (r === "Other") {
+        o.classList.remove("hidden");
+        o.required = true;
+    } else {
+        o.classList.add("hidden");
+        o.required = false;
+        o.value = "";
+    }
+}
+
+function validateForm() {
+    let image = document.getElementById("captured_image").value;
+
+    if (!image) {
+        alert("Please capture your face first!");
+        return false;
+    }
+<img class="user-img"
+     src="{{ url_for('static', filename=user['image']) }}">
+    let inputs = document.querySelectorAll("input[required], textarea[required], select[required]");
+    for (let i = 0; i < inputs.length; i++) {
+        if (!inputs[i].value.trim()) {
+            alert("Please fill all required fields!");
+            return false;
+        }
+    }
+
+    return true;
+}
+</script>
+
+</body>
+</html>
