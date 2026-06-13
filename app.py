@@ -132,36 +132,39 @@ def generate_next_tag():
     return f"TG-{i:03d}"
 
 
-# ================= EMAIL =================
 def send_email(to_email, name, tag):
     sender_email = "jnichebron@gmail.com"
     sender_password = "rtcn yfup cjau ryrr"
 
-    body = f"""Hello {name},
+    try:
+        body = f"""Hello {name},
 
-We are pleased to confirm your KLBS26 registration.
+We are pleased to confirm that your registration for KLBS26 has been successfully recieved.
+A Unique tag has been issued to you. Please bring it on the day of event as it would be used as a means of verification.
+Thank you.
 
-Tag: {tag}
+Your Rrgistration Tag: {tag}
 
-Date: 18–19 July 2026
+Date: 18th–19th July 2026
 Time: 8:00 AM
-Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State
+Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State.
 """
 
-    msg = MIMEText(body)
-    msg["Subject"] = "KLBS26 Registration"
-    msg["From"] = sender_email
-    msg["To"] = to_email
+        msg = MIMEText(body)
+        msg["Subject"] = "KLBS26 Registration"
+        msg["From"] = sender_email
+        msg["To"] = to_email
 
-    try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-    except:
-        pass
 
+        print("EMAIL SENT SUCCESSFULLY")
+
+    except Exception as e:
+        print("EMAIL ERROR:", str(e))
 
 # ================= ROUTES =================
 @app.route("/")
