@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, send_file, jsonify
+from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 import os
 from datetime import datetime
@@ -10,6 +10,7 @@ import numpy as np
 import cv2
 from openpyxl import Workbook
 import logging
+import threading
 
 app = Flask(__name__)
 app.secret_key = "klbs_admin_secret_2026"
@@ -132,22 +133,21 @@ def generate_next_tag():
     return f"TG-{i:03d}"
 
 
+# ================= EMAIL =================
 def send_email(to_email, name, tag):
-    sender_email = "jnichebron@gmail.com"
-    sender_password = "rtcn yfup cjau ryrr"
-
     try:
+        sender_email = "jnichebron@gmail.com"
+        sender_password = "rtcn yfup cjau ryrr"
+
         body = f"""Hello {name},
 
-We are pleased to confirm that your registration for KLBS26 has been successfully recieved.
-A Unique tag has been issued to you. Please bring it on the day of event as it would be used as a means of verification.
-Thank you.
+We are pleased to confirm your registration for KLBS26.
 
-Your Rrgistration Tag: {tag}
+Tag: {tag}
 
-Date: 18th–19th July 2026
+Date: 18–19 July 2026
 Time: 8:00 AM
-Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State.
+Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State
 """
 
         msg = MIMEText(body)
@@ -161,10 +161,11 @@ Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State.
         server.send_message(msg)
         server.quit()
 
-        print("EMAIL SENT SUCCESSFULLY")
+        logging.info("EMAIL SENT SUCCESSFULLY")
 
     except Exception as e:
-        print("EMAIL ERROR:", str(e))
+        logging.error(f"EMAIL ERROR: {e}")
+
 
 # ================= ROUTES =================
 @app.route("/")
@@ -224,11 +225,11 @@ def register():
     conn.commit()
     conn.close()
 
-    import threading
+    # EMAIL IN BACKGROUND (FIXED)
+    threading.Thread(target=send_email, args=(email, name, tag)).start()
 
-threading.Thread(target=send_email, args=(email, name, tag)).start()
+    return render_template("success.html", name=name, tag=tag)
 
-return render_template("success.html", name=name, tag=tag)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -263,7 +264,7 @@ def admin():
     return render_template("admin.html", users=users, total=total)
 
 
-# ================= MOBILE ADMIN (ADDED) =================
+# ================= MOBILE ADMIN =================
 @app.route("/admin-mobile")
 def admin_mobile():
     if not session.get("admin"):
