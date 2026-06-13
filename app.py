@@ -133,17 +133,17 @@ def generate_next_tag():
     return f"TG-{i:03d}"
 
 
-# ================= EMAIL =================
+# ================= EMAIL (FIXED FOR RENDER) =================
 def send_email(to_email, name, tag):
-    try:
-        sender_email = "jnichebron@gmail.com"
-        sender_password = "rtcn yfup cjau ryrr"
+    sender_email = os.getenv("EMAIL_USER", "YOUR_EMAIL@gmail.com")
+    sender_password = os.getenv("EMAIL_PASS", "YOUR_APP_PASSWORD")
 
+    try:
         body = f"""Hello {name},
 
-We are pleased to confirm your registration for KLBS26.
+Your KLBS26 registration has been successfully received.
 
-Tag: {tag}
+Your Tag: {tag}
 
 Date: 18–19 July 2026
 Time: 8:00 AM
@@ -156,6 +156,7 @@ Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State
         msg["To"] = to_email
 
         server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.set_debuglevel(1)  # IMPORTANT: shows real errors in logs
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -164,7 +165,7 @@ Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State
         logging.info("EMAIL SENT SUCCESSFULLY")
 
     except Exception as e:
-        logging.error(f"EMAIL ERROR: {e}")
+        logging.error(f"EMAIL FAILED: {e}")
 
 
 # ================= ROUTES =================
@@ -225,8 +226,8 @@ def register():
     conn.commit()
     conn.close()
 
-    # EMAIL IN BACKGROUND (FIXED)
-    threading.Thread(target=send_email, args=(email, name, tag)).start()
+    # 🔥 TEMP FIX: NO THREADING (IMPORTANT FOR DEBUGGING)
+    send_email(email, name, tag)
 
     return render_template("success.html", name=name, tag=tag)
 
@@ -264,7 +265,6 @@ def admin():
     return render_template("admin.html", users=users, total=total)
 
 
-# ================= MOBILE ADMIN =================
 @app.route("/admin-mobile")
 def admin_mobile():
     if not session.get("admin"):
