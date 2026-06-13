@@ -135,8 +135,8 @@ def generate_next_tag():
 
 # ================= EMAIL (FIXED FOR RENDER) =================
 def send_email(to_email, name, tag):
-    sender_email = os.getenv("EMAIL_USER", "YOUR_EMAIL@gmail.com")
-    sender_password = os.getenv("EMAIL_PASS", "YOUR_APP_PASSWORD")
+    sender_email = os.getenv("EMAIL_USER", "jnichebron@gmail.com")
+    sender_password = os.getenv("EMAIL_PASS", "rtcn yfup cjau ryrr")
 
     try:
         body = f"""Hello {name},
