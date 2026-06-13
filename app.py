@@ -132,7 +132,7 @@ def generate_next_tag():
     return f"TG-{i:03d}"
 
 
-# ================= EMAIL =================
+# ================= EMAIL (FIXED) =================
 def send_email(to_email, name, tag):
     sender_email = "jnichebron@gmail.com"
     sender_password = "rtcn yfup cjau ryrr"
@@ -159,16 +159,18 @@ Venue: 130 Aka Itiam Street, Uyo, Akwa Ibom State
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-    except:
-        pass
+        logging.info("Email sent successfully")
+    except Exception as e:
+        logging.error(f"Email failed: {e}")
 
 
-# ================= ROUTES =================
+# ================= HOME =================
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# ================= REGISTER (FIXED LOGIC) =================
 @app.route("/register", methods=["POST"])
 def register():
 
@@ -180,6 +182,7 @@ def register():
     email = request.form.get("email")
     image = request.form.get("captured_image")
 
+    # STEP 1: validate face FIRST
     valid, msg = validate_face(image)
     if not valid:
         return render_template("index.html", error=msg)
@@ -187,8 +190,10 @@ def register():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
+    # STEP 2: check duplicate AFTER validation (FIXED FLOW)
     cur.execute("SELECT id FROM users WHERE phone=? OR email=?", (phone, email))
     if cur.fetchone():
+        conn.close()
         return render_template("index.html", error="Already registered")
 
     image_path = save_image(image)
@@ -226,6 +231,7 @@ def register():
     return render_template("success.html", name=name, tag=tag)
 
 
+# ================= LOGIN =================
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -239,6 +245,7 @@ def login():
     return render_template("login.html")
 
 
+# ================= ADMIN =================
 @app.route("/admin")
 def admin():
     if not session.get("admin"):
@@ -259,7 +266,7 @@ def admin():
     return render_template("admin.html", users=users, total=total)
 
 
-# ================= MOBILE ADMIN (ADDED) =================
+# ================= MOBILE ADMIN =================
 @app.route("/admin-mobile")
 def admin_mobile():
     if not session.get("admin"):
@@ -277,6 +284,7 @@ def admin_mobile():
     return render_template("admin_mobile.html", users=users)
 
 
+# ================= CHECKIN =================
 @app.route("/checkin/<int:user_id>")
 def checkin(user_id):
     conn = sqlite3.connect(DB_PATH)
@@ -287,6 +295,7 @@ def checkin(user_id):
     return redirect("/admin")
 
 
+# ================= DELETE =================
 @app.route("/delete/<int:user_id>")
 def delete(user_id):
     conn = sqlite3.connect(DB_PATH)
@@ -297,18 +306,25 @@ def delete(user_id):
     return redirect("/admin")
 
 
+# ================= LOGOUT =================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
 
+# ================= EXPORT =================
 @app.route("/export-excel")
 def export_excel():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    cur.execute("SELECT full_name, phone, email, occupation, location, expectations, goals, referral, referral_other, tag, checked_in, created_at FROM users")
+    cur.execute("""
+        SELECT full_name, phone, email, occupation, location,
+        expectations, goals, referral, referral_other,
+        tag, checked_in, created_at FROM users
+    """)
+
     rows = cur.fetchall()
     conn.close()
 
