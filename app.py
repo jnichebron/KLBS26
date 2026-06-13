@@ -224,10 +224,11 @@ def register():
     conn.commit()
     conn.close()
 
-    send_email(email, name, tag)
+    import threading
 
-    return render_template("success.html", name=name, tag=tag)
+threading.Thread(target=send_email, args=(email, name, tag)).start()
 
+return render_template("success.html", name=name, tag=tag)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
